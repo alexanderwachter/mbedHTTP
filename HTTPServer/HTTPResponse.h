@@ -34,8 +34,13 @@ HTTP Request Handler header file.
 #include <map>
 using std::string;
 using std::map;
- 
-///HTTP Server's generic request handler
+
+struct RespCodeMap
+{
+  HTTPResponseCode code;
+  const char* str;
+};
+
 class HTTPResponse
 {
 public:
@@ -45,9 +50,11 @@ public:
   void setRespCode(HTTPResponseCode code){_resp_code = code;}
   void setData(const char* data);
   void send(TCPSocket* socket);
+  const char* getResponseCodeStr(HTTPResponseCode code);
 
 private:
   const char* _data;
+  static const RespCodeMap _resp_code_map[];
   map<string, string> _response_header_fields;
   uint _content_length;
   HTTPResponseCode _resp_code;

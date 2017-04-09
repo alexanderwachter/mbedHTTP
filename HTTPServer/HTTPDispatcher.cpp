@@ -19,7 +19,7 @@ void HTTPDispatcher::dispatch(HTTPRequest& request, HTTPResponse& response)
   }
   else
     handler = it->second;
-
+  
   switch(request.getMethod())
   {
     case GET:
