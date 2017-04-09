@@ -3,12 +3,56 @@
 #include "EthernetInterface.h"
 #include "TCPServer.h"
 #include "TCPSocket.h"
-#include "HTTPRequestHandler.h"
+#include "HTTPRequest.h"
+#include "HTTPResponse.h"
+#include "HTTPDispatcher.h"
+
+// #include "HTTPDispatcher.h"
 
 DigitalIn user_sw(USER_BUTTON);
 Serial pc(USBTX, USBRX, 115200);
 EthernetInterface net;
 TCPServer srv;
+
+class TestHandler : public HTTPRequestHandle
+{
+public:
+  TestHandler(){}
+  virtual ~TestHandler(){}
+  void doGet(HTTPRequest&, HTTPResponse&);
+  void doPost(HTTPRequest&, HTTPResponse&);
+  void doPut(HTTPRequest&, HTTPResponse&);
+  void doDelete(HTTPRequest&, HTTPResponse&);
+  static const char* _message;
+};
+
+const char* TestHandler::_message = 
+"<!DOCTYPE html>\n"
+"<html>\n"
+"<head>\n"
+"<title>Mbed HTTPServer test page</title>\n"
+"</head>\n"
+"<body>\n"
+"<h1>It Works</h1>\n"
+"</body>\n"
+"</html>";
+
+void TestHandler::doGet(HTTPRequest& request, HTTPResponse& response)
+{
+  response.setData(_message);
+}
+void TestHandler::doPost(HTTPRequest& request, HTTPResponse& response)
+{
+  
+}
+void TestHandler::doPut(HTTPRequest& request, HTTPResponse& response)
+{
+  
+}
+void TestHandler::doDelete(HTTPRequest& request, HTTPResponse& response)
+{
+  
+}
 
 int main() 
 {
@@ -29,12 +73,22 @@ int main()
   {
     SocketAddress clienr_addr;
     TCPSocket client_sock;
+    HTTPRequest req(&client_sock);
+    HTTPDispatcher disp;
+    HTTPResponse resp;
+    TestHandler test_h;
+    int ret;
 
+    disp.addHandler(&test_h, "/test.html");
     srv.accept(&client_sock, &clienr_addr);
     printf("accept %s:%d\n", clienr_addr.get_ip_address(), clienr_addr.get_port());
-    nsapi_size_or_error_t read;
-    HTTPRequestHandler req_handler(&client_sock);
-    req_handler.read();
+    if((ret = req.read()))
+    {
+      printf("Reqest handler error %d\n", ret);
+      continue;
+    }
+    disp.dispatch(req, resp);
+    resp.send(&client_sock);
   }
 
 }

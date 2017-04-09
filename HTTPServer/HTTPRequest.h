@@ -24,52 +24,28 @@ THE SOFTWARE.
 HTTP Request Handler header file.
 */
  
-#ifndef HTTP_REQUEST_HANDLER_H
-#define HTTP_REQUEST_HANDLER_H
+#ifndef HTTP_REQUEST_H
+#define HTTP_REQUEST_H
 
 #include "mbed.h"
 #include "TCPSocket.h"
- 
+#include "HTTPTypes.h"
 #include <string>
-using std::string;
- 
 #include <map>
+using std::string;
 using std::map;
  
 ///HTTP Server's generic request handler
-class HTTPRequestHandler
+class HTTPRequest
 {
 public:
-  HTTPRequestHandler(TCPSocket* socket): _socket(socket), _content_length(0){}
-  virtual ~HTTPRequestHandler(){}
+  HTTPRequest(TCPSocket* socket): _socket(socket), _content_length(0){}
+  virtual ~HTTPRequest(){}
+
+  string getPath(){return _path;}
+  RequestMethod getMethod() {return _method;}
+
   int read();
-  string toString();
-//protected:
-  /*
-  virtual void doGet(map<string,string> param) = 0;
-  virtual void doPost(map<string,string> param) = 0;
-  virtual void doPut(map<string,string> param) = 0;
-  virtual void doHead(map<string,string> param) = 0;
-  virtual void onClose(map<string,string> param) = 0; //Connection is closing
-  virtual void close(); //Close socket and destroy data
-  */
-
-  typedef enum 
-  {
-    GET,        /*!< GET request */
-    POST,       /*!< POST request */
-    PUT,        /*!< PUT request */
-    OPTIONS,    /*!< OPTIONS request */
-    HEAD,       /*!< HEAD request */
-    DELETE,     /*!< DELETE request */
-    TRACE,      /*!< TRACE request */
-    CONNECT     /*!< CONNECT request */
-  } RequestMethod;
-
-protected:
-  map<string, string>& getHeaderFields() const;
-  string& getPath() const;
-  int setData(const char* buf, int len);
 
 private:
   TCPSocket* _socket;
@@ -80,21 +56,6 @@ private:
   uint _content_length;
   RequestMethod _method;
   static map<string, RequestMethod> _method_mapping;
-
-  static map<string, RequestMethod> create_method_map()
-        {
-          map<string, RequestMethod> _map;
-          _map["GET"] = GET;
-          _map["POST"] = POST;
-          _map["PUT"] = PUT;
-          _map["OPTIONS"] = OPTIONS;
-          _map["HEAD"] = HEAD;
-          _map["DELETE"] = DELETE;
-          _map["TRACE"] = TRACE;
-          _map["CONNECT"] = CONNECT;
-          return _map;
-        }
-
   int fillBuffer(char* buffer,const int buffer_len, char* end_ptr);
   int parseMethod(char* buffer);
   int parseVersion(char* buffer);

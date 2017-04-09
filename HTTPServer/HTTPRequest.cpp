@@ -1,18 +1,29 @@
-#include "HTTPRequestHandler.h"
+#include "HTTPRequest.h"
 #include <string.h>
 #include "HTTPTypes.h"
 
-map<string, HTTPRequestHandler::RequestMethod> HTTPRequestHandler::_method_mapping = create_method_map();
+map<string, RequestMethod> HTTPRequest::_method_mapping =
+  {
+    {"GET", GET},
+    {"POST", POST},
+    {"PUT", PUT},
+    {"OPTIONS", OPTIONS},
+    {"HEAD", HEAD},
+    {"DELETE", DELETE},
+    {"TRACE", TRACE},
+    {"CONNECT", CONNECT}
+  };
 
 
-int HTTPRequestHandler::parseURL(char* buffer)
+
+int HTTPRequest::parseURL(char* buffer)
 {
   string str(buffer);
   _path += "/" + str;
   return HTTP_OK;
 }
 
-int HTTPRequestHandler::parseMethod(char* buffer)
+int HTTPRequest::parseMethod(char* buffer)
 {
   string str(buffer);
   //TODO: maybe use a more efficient data type
@@ -25,14 +36,14 @@ int HTTPRequestHandler::parseMethod(char* buffer)
   return HTTP_ERROR_METHOD;
 }
 
-int HTTPRequestHandler::parseVersion(char* buffer)
+int HTTPRequest::parseVersion(char* buffer)
 {
   if(strcmp(buffer, "HTTP/1.1") && strcmp(buffer, "HTTP/1.0"))
     return HTTP_ERROR_VERSION;
   return HTTP_OK;
 }
 
-int HTTPRequestHandler::parseFields(char* buffer)
+int HTTPRequest::parseFields(char* buffer)
 {
   char* name = buffer;
   char* value;
@@ -48,7 +59,7 @@ int HTTPRequestHandler::parseFields(char* buffer)
   return HTTP_OK;
 }
 
-int HTTPRequestHandler::parseData(char* buffer, map<string, string>& data_map)
+int HTTPRequest::parseData(char* buffer, map<string, string>& data_map)
 {
   char* name = buffer;
   char* value;
@@ -59,7 +70,7 @@ int HTTPRequestHandler::parseData(char* buffer, map<string, string>& data_map)
   return HTTP_OK;
 }
 
-int HTTPRequestHandler::fillBuffer(char* buffer, int buffer_len, char* start_ptr)
+int HTTPRequest::fillBuffer(char* buffer, int buffer_len, char* start_ptr)
 {
   char* buffer_end = buffer + buffer_len - 1;
   nsapi_size_or_error_t read_len;
@@ -83,7 +94,7 @@ int HTTPRequestHandler::fillBuffer(char* buffer, int buffer_len, char* start_ptr
   return read_len;
 }
 
-int HTTPRequestHandler::read()
+int HTTPRequest::read()
 {
   char buffer[100];
   char* start_ptr = buffer;
@@ -184,6 +195,7 @@ int HTTPRequestHandler::read()
   start_ptr = ++end_ptr;
   if(!((_method == POST || _method == PUT) && _content_length))
     return HTTP_OK;
+  //TODO check if Content-Type: application/x-www-form-urlencoded
   while(true)
   {
     while(*(++end_ptr) && *end_ptr != '&');
