@@ -8,6 +8,7 @@ const RespCodeMap HTTPResponse::_resp_code_map[] =
     {HTTP_Accepted, "Accepted"},
     {HTTP_NoContent, "No Content"},
     {HTTP_BadRequest, "Bad Request"},
+    {HTTP_NotModified, "Not Modified"},
     {HTTP_Unauthorized, "Unauthorized"},
     {HTTP_Forbidden, "Forbidden"},
     {HTTP_NotFound, "Not Found"},
