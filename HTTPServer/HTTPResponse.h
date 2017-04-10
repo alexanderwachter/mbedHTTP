@@ -23,7 +23,7 @@ THE SOFTWARE.
 /**
 HTTP Request Handler header file.
 */
- 
+
 #ifndef HTTP_RESPONSE_H
 #define HTTP_RESPONSE_H
 
@@ -59,6 +59,5 @@ private:
   uint _content_length;
   HTTPResponseCode _resp_code;
 };
- 
+
 #endif
- 

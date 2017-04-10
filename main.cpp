@@ -1,20 +1,13 @@
 #include "mbed.h"
 #include "rtos.h"
 #include "EthernetInterface.h"
-#include "TCPServer.h"
-#include "TCPSocket.h"
-#include "HTTPRequest.h"
-#include "HTTPResponse.h"
-#include "HTTPDispatcher.h"
-
-// #include "HTTPDispatcher.h"
+#include "HTTPServer.h"
 
 DigitalIn user_sw(USER_BUTTON);
 Serial pc(USBTX, USBRX, 115200);
 EthernetInterface net;
-TCPServer srv;
 
-class TestHandler : public HTTPRequestHandle
+class TestHandler : public HTTPRequestHandler
 {
 public:
   TestHandler(){}
@@ -41,18 +34,24 @@ void TestHandler::doGet(HTTPRequest& request, HTTPResponse& response)
 {
   response.setData(_message);
 }
+
 void TestHandler::doPost(HTTPRequest& request, HTTPResponse& response)
 {
-  
+  response.setRespCode(HTTP_MethodNotAllowed);
 }
+
 void TestHandler::doPut(HTTPRequest& request, HTTPResponse& response)
 {
-  
+  response.setRespCode(HTTP_MethodNotAllowed);
 }
+
 void TestHandler::doDelete(HTTPRequest& request, HTTPResponse& response)
 {
-  
+  response.setRespCode(HTTP_MethodNotAllowed);
 }
+
+TestHandler test_h;
+DigitalOut led1(LED1);
 
 int main() 
 {
@@ -65,30 +64,13 @@ int main()
   }
   const char *ip = net.get_ip_address();
   printf("IP address is: %s\n", ip ? ip : "No IP");
-
-  srv.open(&net);
-  srv.bind(net.get_ip_address(), 80);
-  srv.listen(5);
+  HTTPServer http_server(&net);
+  http_server.runThread();
+  http_server.addHandler(&test_h, "/test.html");
   while(true)
   {
-    SocketAddress clienr_addr;
-    TCPSocket client_sock;
-    HTTPRequest req(&client_sock);
-    HTTPDispatcher disp;
-    HTTPResponse resp;
-    TestHandler test_h;
-    int ret;
-
-    disp.addHandler(&test_h, "/test.html");
-    srv.accept(&client_sock, &clienr_addr);
-    printf("accept %s:%d\n", clienr_addr.get_ip_address(), clienr_addr.get_port());
-    if((ret = req.read()))
-    {
-      printf("Reqest handler error %d\n", ret);
-      continue;
-    }
-    disp.dispatch(req, resp);
-    resp.send(&client_sock);
+    led1 = !led1;
+    wait(0.5);
   }
 
 }

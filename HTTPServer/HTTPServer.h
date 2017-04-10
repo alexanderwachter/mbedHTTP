@@ -19,35 +19,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
+ 
 /**
-HTTP Request Handler header file.
+HTTP Server file.
 */
 
-#ifndef HTTP_DISPATCHER_H
-#define HTTP_DISPATCHER_H
+#ifndef HTTP_SERVER_H
+#define HTTP_SERVER_H
 
 #include "mbed.h"
-#include "HTTPRequest.h"
-#include "HTTPResponse.h"
-#include "HTTPRequestHandler.h"
+#include "TCPSocket.h"
+#include <NetworkInterface.h>
+#include <Thread.h>
 #include <string>
-#include <map>
-using std::string;
-using std::map;
+#include "HTTPDispatcher.h"
 
+class HTTPRequestHandler;
 
-class HTTPDispatcher
+class HTTPServer
 {
 public:
-  HTTPDispatcher(){}
-  virtual ~HTTPDispatcher(){}
-  void addHandler(HTTPRequestHandler* handle, string path);
-  void dispatch(HTTPRequest& request, HTTPResponse& response);
+  HTTPServer(NetworkInterface* net);
+  virtual ~HTTPServer(){}
+  void runThread();
+  void killThread();
+  void addHandler(HTTPRequestHandler* handler, std::string path) {_dispatcher.addHandler(handler, path);}
+  void accept_blocking();
+  static void accept_blocking(HTTPServer* srv);
 
 private:
-  static const char* _not_found_message;
-  map<string, HTTPRequestHandler*> _handler;
+  NetworkInterface* _net;
+  TCPServer _srv;
+  TCPSocket _client_sock;
+  HTTPDispatcher _dispatcher;
+  Thread _thread;
+  bool _run;
 };
 
 #endif

@@ -195,29 +195,33 @@ int HTTPRequest::read()
   start_ptr = ++end_ptr;
   if(!((_method == POST || _method == PUT) && _content_length))
     return HTTP_OK;
-  //TODO check if Content-Type: application/x-www-form-urlencoded
-  while(true)
-  {
-    while(*(++end_ptr) && *end_ptr != '&');
-    remaining_data = _content_length - (end_ptr - start_ptr);
-    if(*end_ptr == '\0' && remaining_data)
+  //TODO check if Content-Type: application/x-www-form-urlencoded 
+  auto it = _reqest_header_fields.find("Content-Type");
+  if(it == _reqest_header_fields.end())
+    return HTTP_OK;
+  if(it->second == "application/x-www-form-urlencoded")
+    while(true)
     {
-      ret = fillBuffer(buffer, sizeof(buffer), start_ptr);
-      if(ret <= 0)
+      while(*(++end_ptr) && *end_ptr != '&');
+      remaining_data = _content_length - (end_ptr - start_ptr);
+      if(*end_ptr == '\0' && remaining_data)
+      {
+        ret = fillBuffer(buffer, sizeof(buffer), start_ptr);
+        if(ret <= 0)
+          return ret;
+        start_ptr = buffer;
+        end_ptr = buffer;
+        continue;
+      }
+      *end_ptr = '\0';  //terminate c string
+      ret = parseData(start_ptr, _request_data);
+      if(ret < 0)
         return ret;
-      start_ptr = buffer;
-      end_ptr = buffer;
-      continue;
+      _content_length -= end_ptr - start_ptr;
+      if(!remaining_data)
+        break;
+      _content_length--; //the '&'
+      start_ptr = ++end_ptr;
     }
-    *end_ptr = '\0';  //terminate c string
-    ret = parseData(start_ptr, _request_data);
-    if(ret < 0)
-      return ret;
-    _content_length -= end_ptr - start_ptr;
-    if(!remaining_data)
-      break;
-    _content_length--; //the '&'
-    start_ptr = ++end_ptr;
-  }
   return HTTP_OK;
 }

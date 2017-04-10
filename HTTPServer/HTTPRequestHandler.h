@@ -20,34 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/**
-HTTP Request Handler header file.
-*/
+#ifndef HTTP_REQUEST_HANDLER_H
+#define HTTP_REQUEST_HANDLER_H
 
-#ifndef HTTP_DISPATCHER_H
-#define HTTP_DISPATCHER_H
-
-#include "mbed.h"
-#include "HTTPRequest.h"
 #include "HTTPResponse.h"
-#include "HTTPRequestHandler.h"
-#include <string>
-#include <map>
-using std::string;
-using std::map;
+#include "HTTPRequest.h"
 
-
-class HTTPDispatcher
+class HTTPRequestHandler
 {
 public:
-  HTTPDispatcher(){}
-  virtual ~HTTPDispatcher(){}
-  void addHandler(HTTPRequestHandler* handle, string path);
-  void dispatch(HTTPRequest& request, HTTPResponse& response);
-
-private:
-  static const char* _not_found_message;
-  map<string, HTTPRequestHandler*> _handler;
+  HTTPRequestHandler(){}
+  virtual ~HTTPRequestHandler(){}
+  virtual void doGet(HTTPRequest& request, HTTPResponse& response) = 0;
+  virtual void doPost(HTTPRequest& request, HTTPResponse& response) = 0;
+  virtual void doPut(HTTPRequest& request, HTTPResponse& response) = 0;
+  virtual void doDelete(HTTPRequest& request, HTTPResponse& response) = 0;
 };
-
 #endif

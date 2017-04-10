@@ -1,20 +1,32 @@
 #include "HTTPDispatcher.h"
 
-void HTTPDispatcher::addHandler(HTTPRequestHandle* handle, string path)
+const char* HTTPDispatcher::_not_found_message =
+"<!DOCTYPE html>\n"
+"<html>\n"
+"<head>\n"
+"<title>404 Page not found</title>\n"
+"</head>\n"
+"<body>\n"
+"<h1>Page not found!</h1>\n"
+"</body>\n"
+"</html>";
+
+void HTTPDispatcher::addHandler(HTTPRequestHandler* handle, string path)
 {
   if(!handle)
     return;
-  _handler.insert(std::pair<string, HTTPRequestHandle*>(path, handle));
+  _handler.insert(std::pair<string, HTTPRequestHandler*>(path, handle));
 }
 
 void HTTPDispatcher::dispatch(HTTPRequest& request, HTTPResponse& response)
 {
-  HTTPRequestHandle* handler;
+  HTTPRequestHandler* handler;
   printf("Request path |%s|\n", request.getPath().c_str());
-  map<string, HTTPRequestHandle*>::iterator it = _handler.find(request.getPath());
+  map<string, HTTPRequestHandler*>::iterator it = _handler.find(request.getPath());
   if(it == _handler.end())//404
   {
     response.setRespCode(HTTP_NotFound);
+    response.setData(_not_found_message);
     return;
   }
   else

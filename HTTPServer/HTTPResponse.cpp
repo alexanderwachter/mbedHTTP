@@ -45,6 +45,8 @@ void HTTPResponse::send(TCPSocket* socket)
     resp_code_str = getResponseCodeStr(_resp_code);
   }
   string header = "HTTP/1.1 " + to_string(_resp_code) + " " + string(resp_code_str) + "\r\n";
+  header += "Server: mbed os HTTPServer\r\n";
+  header += "Connection: close\r\n";
   header += "Content-Length: " + to_string(_content_length) + "\r\n";
   for(fields_it = _response_header_fields.begin(); fields_it != _response_header_fields.end(); fields_it++)
   {
