@@ -44,14 +44,13 @@ public:
 
   string getPath(){return _path;}
   RequestMethod getMethod() {return _method;}
-
+  map<string, string> _reqest_header_fields;
+  map<string, string> _request_data;
+  map<string, string> _url_param;
   int read();
 
 private:
   TCPSocket* _socket;
-  map<string, string> _reqest_header_fields;
-  map<string, string> _request_data;
-  map<string, string> _url_param;
   string _path;
   uint _content_length;
   RequestMethod _method;
