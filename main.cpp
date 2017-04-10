@@ -37,7 +37,22 @@ void TestHandler::doGet(HTTPRequest& request, HTTPResponse& response)
 
 void TestHandler::doPost(HTTPRequest& request, HTTPResponse& response)
 {
-  response.setRespCode(HTTP_MethodNotAllowed);
+  static string page =
+  "<!DOCTYPE html>\n"
+  "<html>\n"
+  "<head>\n"
+  "<title>Mbed HTTPServer test page</title>\n"
+  "</head>\n"
+  "<body>\n"
+  "<h1>POST Data:</h1>\n";
+
+  for(auto data_it = request._request_data.begin(); data_it != request._request_data.end(); data_it++)
+  {
+    page += "<p>" + data_it->first + ": " + data_it->second + "</p>";
+  }
+  page += "</body>\n"
+  "</html>";
+  response.setData(page.c_str());
 }
 
 void TestHandler::doPut(HTTPRequest& request, HTTPResponse& response)
