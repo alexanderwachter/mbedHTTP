@@ -49,6 +49,7 @@ public:
 
   void setRespCode(HTTPResponseCode code){_resp_code = code;}
   void setData(const char* data);
+  void setData(const char* data, uint size);
   void send(TCPSocket* socket);
   const char* getResponseCodeStr(HTTPResponseCode code);
 
@@ -58,6 +59,7 @@ private:
   map<string, string> _response_header_fields;
   uint _content_length;
   HTTPResponseCode _resp_code;
+  int sendAll(TCPSocket* socket, const char* data, uint size);
 };
 
 #endif

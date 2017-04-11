@@ -24,6 +24,12 @@ void HTTPResponse::setData(const char* data)
     _content_length = strlen(_data);
 }
 
+void HTTPResponse::setData(const char* data, uint size)
+{
+  _data = data;
+  _content_length = size;
+}
+
 const char* HTTPResponse::getResponseCodeStr(HTTPResponseCode code)
 {
   uint i;
@@ -35,11 +41,31 @@ const char* HTTPResponse::getResponseCodeStr(HTTPResponseCode code)
   return nullptr;
 }
 
+int HTTPResponse::sendAll(TCPSocket* socket, const char* data, uint size)
+{
+  uint remaining = size;
+  uint sent = 0;
+  int ret;
+  socket->set_blocking(true);
+  socket->set_timeout(10000);
+  while(remaining > 0)
+  {
+    printf("sending %d bytes\n", remaining);
+    ret = socket->send(data + sent, remaining);
+    if(ret < 0)
+      return ret;
+    remaining -= ret;
+    sent += ret;
+  }
+  return sent;
+}
+
 void HTTPResponse::send(TCPSocket* socket)
 {
   printf("send response\n");
   map<string, string>::iterator fields_it;
   const char* resp_code_str = getResponseCodeStr(_resp_code);
+  int ret = 0;
   if(!resp_code_str)
   {
     _resp_code = HTTP_InternalServerError;
@@ -56,5 +82,9 @@ void HTTPResponse::send(TCPSocket* socket)
   header += "\r\n";
   socket->send(header.c_str(), header.length());
   if(_data && _content_length)
-    socket->send(_data, _content_length);
+  {
+    ret = sendAll(socket, _data, _content_length);
+  }
+  if(ret)
+    printf("data sent: %d\n", ret);
 }
