@@ -49,11 +49,9 @@ void HTTPServer::accept_blocking(HTTPServer* srv)
     srv->_srv.accept(&(srv->_client_sock), &clienr_addr);
     printf("accept %s:%d\n", clienr_addr.get_ip_address(), clienr_addr.get_port());
     if((ret = req.read()))
-    {
-      printf("Reqest handler error %d\n", ret);
-      continue;
-    }
-    srv->_dispatcher.dispatch(req, resp);
+      resp.setRespCode(HTTP_BadRequest);
+    else
+      srv->_dispatcher.dispatch(req, resp);
     resp.send(&(srv->_client_sock));
     srv->_client_sock.close();
   }
